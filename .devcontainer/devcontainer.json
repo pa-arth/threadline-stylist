@@ -1,0 +1,26 @@
+{
+  "name": "threadline-stylist",
+  "image": "ghcr.io/promptster-ai/promptster-assessment-plain:de62d9e129571161",
+  "onCreateCommand": "set -e\nmarker=\"${PROMPTSTER_HOSTED_SETUP_MARKER:-$HOME/.promptster/hosted-setup-complete}\"\nmkdir -p \"$(dirname \"$marker\")\"\nrm -f \"$marker\" \"$marker.tmp\"\nstarted_at=\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"\nstarted_epoch=\"$(date -u +%s)\"\n(\npython3 -m venv .venv\n.venv/bin/pip install -q -e \".[dev]\"\ngrep -q 'promptster assessment venv' \"$HOME/.bashrc\" 2>/dev/null || printf '\\n# promptster assessment venv\\nsource %s/.venv/bin/activate\\n' \"$PWD\" >> \"$HOME/.bashrc\"\n)\ncompleted_at=\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"\ncompleted_epoch=\"$(date -u +%s)\"\n{\n  echo \"schema=1\"\n  echo \"startedAt=$started_at\"\n  echo \"completedAt=$completed_at\"\n  echo \"setupSeconds=$((completed_epoch - started_epoch))\"\n  echo \"prebuildEnvRaw=${CODESPACE_PREBUILD-}\"\n  echo \"prebuildEnvSet=$(if [ -n \"${CODESPACE_PREBUILD+x}\" ]; then echo yes; else echo no; fi)\"\n  echo \"codespaceName=${CODESPACE_NAME-}\"\n  echo \"issueId=${PROMPTSTER_ISSUE_ID-}\"\n} > \"$marker.tmp\"\nmv -f \"$marker.tmp\" \"$marker\"",
+  "waitFor": "onCreateCommand",
+  "postAttachCommand": "promptster start",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "PROMPTSTER_HOSTED_LANE": "1",
+    "PROMPTSTER_ISSUE_ID": "threadline-stylist",
+    "PROMPTSTER_SETUP_MARKER_CONTRACT": "1"
+  },
+  "hostRequirements": {
+    "cpus": 2
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
